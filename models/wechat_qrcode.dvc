@@ -1,0 +1,5 @@
+outs:
+- md5: 1e22ed65881ab180b9fbb043269f6aa4.dir
+  size: 1038355
+  nfiles: 6
+  path: wechat_qrcode
