@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='nsrtf',
-    packages=find_packages(),
+    packages=find_packages(), 
     version='0.1.0',
     install_requires=[
         'Click',
