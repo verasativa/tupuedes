@@ -84,3 +84,20 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+
+# tmp stuff, so I can work confortably
+data
+LICENSE
+Makefile
+README.md
+requirements.txt
+setup.py
+test_environment.py
+tox.ini
+/docs
+nsrtf/legacy
+nsrtf/trainings
+nsrtf/visualization
+/references
+/reports

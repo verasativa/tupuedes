@@ -11,45 +11,6 @@ from scipy import signal
 
 
 # TODO: implement treads
-# TODO: take a record boolean paramenter
-
-def plot_aruco(corners, ids):
-    global image
-    # Plot ArUco
-    # verify *at least* one ArUco marker was detected
-    if len(corners) > 0:
-        # flatten the ArUco IDs list
-        ids = ids.flatten()
-
-        # loop over the detected ArUCo corners
-        for (markerCorner, markerID) in zip(corners, ids):
-            # extract the marker corners (which are always returned in
-            # top-left, top-right, bottom-right, and bottom-left order)
-            corners = markerCorner.reshape((4, 2))
-            (topLeft, topRight, bottomRight, bottomLeft) = corners
-
-            # convert each of the (x, y)-coordinate pairs to integers
-            topRight = (int(topRight[0]), int(topRight[1]))
-            bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-            bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-            topLeft = (int(topLeft[0]), int(topLeft[1]))
-
-            # draw the bounding box of the ArUCo detection
-            cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
-            cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
-            cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
-            cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
-
-            # compute and draw the center (x, y)-coordinates of the ArUco
-            # marker
-            cX = int((topLeft[0] + bottomRight[0]) / 2.0)
-            cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-            cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
-
-            # draw the ArUco marker ID on the image
-            cv2.putText(image, str(markerID),
-            (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
-            0.5, (0, 255, 0), 2)
 
 floating_window = []
 def update_floating_window(new_row, size = 15 * 30):
@@ -57,8 +18,6 @@ def update_floating_window(new_row, size = 15 * 30):
     if len(floating_window) > size:
         floating_window[:size-1]
     floating_window.insert(0, new_row)
-
-
 
 arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
 arucoParams = cv2.aruco.DetectorParameters_create()
@@ -84,7 +43,7 @@ def get_columns():
 
     return columns
 
-def record(source, debug, record):
+def record(source, do_plot, record):
     mp_drawing = mp.solutions.drawing_utils
     mp_drawing_styles = mp.solutions.drawing_styles
     mp_pose = mp.solutions.pose
@@ -98,11 +57,7 @@ def record(source, debug, record):
     )
     columns = get_columns()
     date_time_base_path = datetime.datetime.now().strftime('data/recorded/%Y.%m.%d %H.%M')
-    cap = cv2.VideoCapture(source)
-    start_time = time.time()
-    x = 1 # displays the frame rate every 1 second
-    counter = 0
-    frame_rate = 0
+    video_getter = utils.VideoGet(source).start()
     cps = utils.CountsPerSec().start()
     nose_history = np.array([])
 
@@ -113,47 +68,39 @@ def record(source, debug, record):
         min_tracking_confidence=0.5) as pose:
         data = []
 
-
-        frame_width = int(cap.get(3))
-        frame_height = int(cap.get(4))
-        size = (frame_width, frame_height)
-        # Below VideoWriter object will create
-        # a frame of above defined The output 
-        # is stored in 'filename.avi' file.
+        frame_rate = 0
         
-        writter_raw = cv2.VideoWriter(f'{date_time_base_path}_raw.mp4', 
-                                cv2.VideoWriter_fourcc(*'mp4v'),
-                                15, size)
-        writter_annotated = cv2.VideoWriter(f'{date_time_base_path}_ann.mp4', 
-                                cv2.VideoWriter_fourcc(*'mp4v'),
-                                15, size)
+        size = (video_getter.frame_width, video_getter.frame_height)
 
-        fig, ax = plt.subplots()
-        ln, = plt.plot([])
-        plt.ion()
-        plt.ylim(-.5, .5)
-        ymin,ymax = ax.get_ylim()
+        if record:
+            writter_raw = cv2.VideoWriter(f'{date_time_base_path}_raw.mp4', 
+                                    cv2.VideoWriter_fourcc(*'mp4v'),
+                                    15, size)
+            writter_annotated = cv2.VideoWriter(f'{date_time_base_path}_ann.mp4', 
+                                    cv2.VideoWriter_fourcc(*'mp4v'),
+                                    15, size)
+
+        if do_plot:
+            fig, ax = plt.subplots()
+            ln, = plt.plot([])
+            plt.ion()
+            plt.ylim(-.5, .5)
+            ymin,ymax = ax.get_ylim()
+            plt.show()
+
         rolling_avg_ws = 45
-        plt.show()                         
-        while cap.isOpened():
-            success, image = cap.read()
-            # We need to set resolutions.
-            # so, convert them from float to integer.
-            frame_width = int(cap.get(3))
-            frame_height = int(cap.get(4))
-            size = (frame_width, frame_height)
-        
+        while True:
+            if (cv2.waitKey(1) == ord("q")) or video_getter.stopped:
+                video_getter.stop()
+                break
 
-
-            if not success:
-                print("Ignoring empty camera frame.")
-                # If loading a video, use 'break' instead of 'continue'.
-                continue
+            image = video_getter.frame
 
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.
             #image.flags.writeable = False
-            writter_raw.write(image)
+            if record:
+                writter_raw.write(image)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results_pose = pose.process(image)
             result_qrs, points_qrs = detector_qr.detectAndDecode(image)
@@ -161,13 +108,13 @@ def record(source, debug, record):
             parameters=arucoParams)
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
             # Draw the pose annotation on the image.
             mp_drawing.draw_landmarks(
                 image,
                 results_pose.pose_landmarks,
                 mp_pose.POSE_CONNECTIONS,
                 landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-
             
             flipped_img = cv2.flip(image, 1)
             # Build data row
@@ -185,7 +132,7 @@ def record(source, debug, record):
                 data.append(data_row)
                 # Plot update
                 nose_history = np.append(nose_history, data_row[columns.index('abs_NOSE_x')])
-                #print(nose_history.shape[0])
+                
                 # TODO: formalize rolling average window size in variable
                 if nose_history.shape[0] > rolling_avg_ws:
                     # TODO: do it in numpy
@@ -201,24 +148,29 @@ def record(source, debug, record):
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=3,
                     color=(0, 255, 0))
-
-                    plt.pause(1/1000)
-                    ln.set_xdata(range(detrend_data.shape[0]))
-                    ln.set_ydata(detrend_data)
-                    plt.xlim(0, nose_history.shape[0])
-                    if len(reps) > len(last_reps):
-                        ax.add_patch(Rectangle((reps[-1][0], ymin), reps[-1][2] - reps[-1][0], ymax - ymin, facecolor='pink', edgecolor = 'black',
-                         fill=True,
-                         lw=1))
-                    last_reps = reps
+                    
+                    if do_plot:
+                        plt.pause(1/1000)
+                        ln.set_xdata(range(detrend_data.shape[0]))
+                        ln.set_ydata(detrend_data)
+                        plt.xlim(0, nose_history.shape[0])
+                        if len(reps) > len(last_reps):
+                            ax.add_patch(Rectangle((reps[-1][0], ymin), reps[-1][2] - reps[-1][0], ymax - ymin, facecolor='pink', edgecolor = 'black',
+                            fill=True,
+                            lw=1))
+                        last_reps = reps
                 else:
                     pos = (int(image.shape[1]/2), 100)
+                    if record:
+                        cv2.putText(image, str(rolling_avg_ws - nose_history.shape[0]), pos,
+                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                        fontScale=3,
+                        color=(0, 0, 255))
                     cv2.putText(flipped_img, str(rolling_avg_ws - nose_history.shape[0]), pos,
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=3,
                     color=(0, 0, 255))
-                #plt.ylim(-.5, .5)
-                #fig.canvas.draw()
+                
             # Plot QR
             for result_qr, points_qr in zip(list(result_qrs), list(points_qrs)):
                 center = np.average(points_qr, 0)
@@ -228,35 +180,32 @@ def record(source, debug, record):
             #plot_aruco(corners, ids)
 
             # Get frameRate
-            counter+=1
             frame_rate = cps.countsPerSec()
 
-            # if (time.time() - start_time) > x :
-            #     frame_rate = counter / (time.time() - start_time)
-            #     counter = 0
-            #     start_time = time.time()
             # Draw FPS
             pos = (int(image.shape[1] - 200), 50)
-            cv2.putText(image, f"{frame_rate:.2f} fps", pos,
-                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                    fontScale=1.4,
-                    color=(255, 255, 255))
+            if record:
+                cv2.putText(image, f"{frame_rate:.2f} fps", pos,
+                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                        fontScale=1.4,
+                        color=(255, 255, 255))
             cv2.putText(flipped_img, f"{frame_rate:.2f} fps", pos,
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=1.4,
                     color=(255, 255, 255))
             
-            writter_annotated.write(image)
+            if record:
+                writter_annotated.write(image)
             # Flip the image horizontally for a selfie-view display.
             cv2.imshow('No se rinda tan facil', flipped_img)
             cps.increment()
-            if cv2.waitKey(5) & 0xFF == 27:
-                break
-    cap.release()
-    writter_raw.release()
+            
+    if record:
+        writter_raw.release()
+        writter_annotated.release()
     cv2.destroyAllWindows()
 
-
+    # Data frame writte
     df = pd.DataFrame(data=data, columns=columns)
     df.to_csv(f'{date_time_base_path}.csv', index_label='Frame')
 
