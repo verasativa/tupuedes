@@ -4,6 +4,7 @@ import datetime, time
 import pandas as pd
 import numpy as np
 from nsrtf.analysis import find_reps
+from nsrtf.live import utils
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from scipy import signal
@@ -102,6 +103,7 @@ def record(source, debug, record):
     x = 1 # displays the frame rate every 1 second
     counter = 0
     frame_rate = 0
+    cps = utils.CountsPerSec().start()
     nose_history = np.array([])
 
     last_reps = []
@@ -227,10 +229,12 @@ def record(source, debug, record):
 
             # Get frameRate
             counter+=1
-            if (time.time() - start_time) > x :
-                frame_rate = counter / (time.time() - start_time)
-                counter = 0
-                start_time = time.time()
+            frame_rate = cps.countsPerSec()
+
+            # if (time.time() - start_time) > x :
+            #     frame_rate = counter / (time.time() - start_time)
+            #     counter = 0
+            #     start_time = time.time()
             # Draw FPS
             pos = (int(image.shape[1] - 200), 50)
             cv2.putText(image, f"{frame_rate:.2f} fps", pos,
@@ -245,6 +249,7 @@ def record(source, debug, record):
             writter_annotated.write(image)
             # Flip the image horizontally for a selfie-view display.
             cv2.imshow('No se rinda tan facil', flipped_img)
+            cps.increment()
             if cv2.waitKey(5) & 0xFF == 27:
                 break
     cap.release()
