@@ -1,4 +1,3 @@
-from email.policy import default
 import click
 
 
@@ -24,6 +23,12 @@ def open_cap_validator(source):
 @click.option('--record/--no-record', default=False)
 @click.option('--plot/--no-plot', default=False)
 def golive(source, record, plot):
-    from nsrtf import live
+    from tupuedes import live
     click.echo('Going live...')
     live.record(source, plot, record)
+
+@cli.command()
+@click.option('--source', default=0, help='stream source', type=open_cap_validator)
+def dale(source):
+    from tupuedes.main import loop
+    loop(source)

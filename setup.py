@@ -1,18 +1,18 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='nsrtf',
+    name='tupuedes',
     packages=find_packages(), 
-    version='0.1.0',
+    version='0.2.0',
     install_requires=[
         'Click',
     ],
     entry_points={
         'console_scripts': [
-            'nsrtf = nsrtf:cli',
+            'tupuedes = tupuedes:cli',
         ],
     },
-    description='No se rinda tan facil" CV trainer',
+    description='Tú puedes; an opensource smart gym',
     author='Vera Sativa',
     license='',
 )
