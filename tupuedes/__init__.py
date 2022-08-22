@@ -29,6 +29,6 @@ def golive(source, record, plot):
 
 @cli.command()
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
-def dale(source):
+def train(source):
     from tupuedes.main import loop
     loop(source)

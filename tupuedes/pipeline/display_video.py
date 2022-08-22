@@ -33,5 +33,5 @@ class DisplayVideo(Pipeline):
         #print(cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE))
         return data
 
-    def cleanup(self):
+    def close(self):
         cv2.destroyWindow(self.window_name)

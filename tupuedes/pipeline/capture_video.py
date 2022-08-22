@@ -11,7 +11,7 @@ class CaptureVideo(Pipeline):
 
     def __init__(self, src):
         if isinstance(src, int):
-            self.cap = WebcamVideoCapture(src).start()
+            self.cap = WebcamVideoCapture(src, queue_size=3).start()
             self.frame_count = -1
         else:
             self.cap = FileVideoCapture(src).start()
