@@ -90,14 +90,11 @@ target/
 data
 LICENSE
 Makefile
-README.md
-requirements.txt
-setup.py
 test_environment.py
 tox.ini
 /docs
-nsrtf/legacy
-nsrtf/trainings
-nsrtf/visualization
+tupuedes/legacy
+tupuedes/trainings
+tupuedes/visualization
 /references
 /reports
