@@ -3,8 +3,11 @@ from tupuedes.pipeline import Pipeline
 from tupuedes.pipeline.pose_regresor import PoseRegresor
 import datetime, pathlib
 import pandas as pd
+import numpy as np
+import mediapipe as mp
+import math
 
-# TODO: split the store logic to another object
+# TODO: split the store logic to another object. Maybe?
 
 class AnalysePose(Pipeline):
     def __init__(self, exercises, store = False, aruco_map = None):
@@ -72,9 +75,9 @@ class AnalysePose(Pipeline):
         return columns_list, values_list
     def add_mp_pose(self, results_pose, columns_list, values_list):
         if results_pose.pose_landmarks is not None:
+            # Colums for absolute, relative, x, y, z, v, p
             for column in PoseRegresor.FIELDS:
                 columns_list.append(column)
-
             _desc, absolute_landmarks = results_pose.pose_landmarks.ListFields()[0]
             for absolute_landmark in absolute_landmarks:
                 for axis in ['x', 'y', 'z', 'visibility', 'presence']:
@@ -84,8 +87,49 @@ class AnalysePose(Pipeline):
             for relative_landmark in relative_landmarks:
                 for axis in ['x', 'y', 'z', 'visibility', 'presence']:
                     values_list.append(getattr(relative_landmark, axis))
+            # Calculated angles
+            angles_to_find = [
+                ('LEFT_HIP', 'LEFT_KNEE', 'LEFT_ANKLE'),
+                ('RIGHT_HIP', 'RIGHT_KNEE', 'RIGHT_ANKLE'),
+                ('LEFT_SHOULDER', 'LEFT_HIP', 'LEFT_KNEE'),
+                ('RIGHT_SHOULDER', 'RIGHT_HIP', 'RIGHT_KNEE'),
+            ]
+            for (a_key, b_key, c_key) in angles_to_find:
+                columns_list.append(f"angle_{b_key}")
+                a_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, a_key)]
+                b_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, b_key)]
+                c_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, c_key)]
+                a = np.array([a_object.x, a_object.y, a_object.z])
+                b = np.array([b_object.x, b_object.y, b_object.z])
+                c = np.array([c_object.x, c_object.y, c_object.z])
+                angle = self.calculate_angle(a, b, c)
+                values_list.append(angle)
+            # Calculated distance
+            distances_to_calculate = {
+                'knees': ('LEFT_KNEE', 'RIGHT_KNEE'),
+                'ankles': ('LEFT_ANKLE', 'RIGHT_ANKLE'),
+            }
+            for name, (x_key, y_key) in distances_to_calculate.items():
+                x_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, x_key)]
+                y_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, y_key)]
+                x = [x_object.x, x_object.y, x_object.z]
+                y = [y_object.x, y_object.y, y_object.z]
+                columns_list.append(name)
+                values_list.append(math.dist(x, y))
 
         return columns_list, values_list
+
+    def calculate_angle(self, a, b, c):
+        ba = a - b
+        bc = c - b
+
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
+
+        return np.degrees(angle)
+
+    def calculate_distance(self):
+        pass
     def close(self):
         # not yet, when we have the colums more stable
         # self.df.to_arrow(f"{self.date_time_base_path}.arrow")

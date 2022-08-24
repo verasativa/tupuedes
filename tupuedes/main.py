@@ -9,11 +9,12 @@ from tupuedes.pipeline.analyse_pose import AnalysePose
 from tupuedes.pipeline.save_video import SaveVideo
 from tupuedes.pipeline.fps_calculator import FPSCalculator
 from tupuedes.pipeline.aruco_finder import ArucoFinder
+from tupuedes.util.metrics import Metrics
 
 # TODO: mirror for screen
 # DONE: add video writter
 # TODO: get write path from custom fancy class
-
+metrics = Metrics()
 def loop(source):
     # TODO: move to somewere cleaner
     # boiler plate
@@ -30,18 +31,19 @@ def loop(source):
 
     # pipeline items
     capture_video = CaptureVideo(source)
-    predict = PoseRegresor(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    aruco = ArucoFinder(source="image", aruco_map=aruco_map)
-    analyse_pose = AnalysePose(['sentadillas'], store=True)
+    infer_pose = PoseRegresor(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    infer_aruco = ArucoFinder(source="image", aruco_map=aruco_map)
+    analyse_coordinates = AnalysePose(['sentadillas'], store=True)
     fps_calculator = FPSCalculator()
     annotate_video = AnnotateVideo("image", annotate_pose=True, annotate_fps=True, annotate_aruco=True)
     display_video = DisplayVideo("image", "Tú puedes!", )
     save_video = SaveVideo("image", f"{date_time_base_path}.avi")
 
     # Create image processing pipeline
-    pipeline = (capture_video | predict | aruco | fps_calculator | analyse_pose | annotate_video | display_video | save_video)
+    pipeline = (capture_video | infer_pose | infer_aruco | fps_calculator | analyse_coordinates | annotate_video | display_video | save_video)
     # Iterate through pipeline
     try:
+        metrics.log_event('exercise start')
         for _ in tqdm(pipeline,
                       total=capture_video.frame_count if capture_video.frame_count > 0 else None,
                       disable=True):
@@ -53,5 +55,7 @@ def loop(source):
     finally:
         # Pipeline cleanup
         display_video.close()
-        analyse_pose.close()
+        analyse_coordinates.close()
         save_video.close()
+        metrics.log_event('exercise end')
+        
