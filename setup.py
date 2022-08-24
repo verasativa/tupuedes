@@ -5,7 +5,7 @@ setup(
     packages=find_packages(), 
     version='0.2.0',
     install_requires=[
-        'Click', 'mediapipe', 'pandas', 'matplotlib', 'scipy', 'posthog'
+        'Click', 'mediapipe', 'pandas', 'matplotlib', 'scipy', 'posthog', 'tqdm'
     ],
     entry_points={
         'console_scripts': [
