@@ -1,4 +1,3 @@
-import datetime
 from tqdm import tqdm
 
 from tupuedes.pipeline.capture_video import CaptureVideo
@@ -10,18 +9,16 @@ from tupuedes.pipeline.save_video import SaveVideo
 from tupuedes.pipeline.fps_calculator import FPSCalculator
 from tupuedes.pipeline.aruco_finder import ArucoFinder
 from tupuedes.util.metrics import Metrics
+from tupuedes.util.file_system import get_new_recording_path
 
 # TODO: mirror for screen
 # DONE: add video writter
-# TODO: get write path from custom fancy class
+# DONE: get write path from custom fancy class
 metrics = Metrics()
 def loop(source):
-    # TODO: move to somewere cleaner
     # boiler plate
-    now = datetime.datetime.now()
-    format_string = 'data/recorded/%Y.%m.%d %H.%M'
-    date_time_base_path = now.strftime(format_string)
-
+    date_time_base_path = get_new_recording_path()
+    print(date_time_base_path)
     aruco_map = {
         0: 'bar',
         1: 'abs_wheel',
@@ -33,7 +30,7 @@ def loop(source):
     capture_video = CaptureVideo(source)
     infer_pose = PoseRegresor(min_detection_confidence=0.5, min_tracking_confidence=0.5)
     infer_aruco = ArucoFinder(source="image", aruco_map=aruco_map)
-    analyse_coordinates = AnalysePose(['sentadillas'], store=True)
+    analyse_coordinates = AnalysePose(['sentadillas'], store=True, store_path=f"{date_time_base_path}.csv")
     fps_calculator = FPSCalculator()
     annotate_video = AnnotateVideo("image", annotate_pose=True, annotate_fps=True, annotate_aruco=True)
     display_video = DisplayVideo("image", "Tú puedes!", )

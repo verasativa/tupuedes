@@ -5,19 +5,17 @@ import datetime, pathlib
 import pandas as pd
 import numpy as np
 import mediapipe as mp
-import math
+import math, os
 
 # TODO: split the store logic to another object. Maybe?
 
 class AnalysePose(Pipeline):
-    def __init__(self, exercises, store = False, aruco_map = None):
+    def __init__(self, exercises, store = False, store_path=None, aruco_map = None):
         self.exercises = exercises
 
         if store:
-            # TODO: find user home dir, and store there. windows: my documents/tupuedes
-            now = datetime.datetime.now()
-            format_string = 'data/recorded/%Y.%m.%d %H.%M'
-            self.date_time_base_path = now.strftime(format_string)
+            assert store_path is not None, "If you set store = True, please set a path where to save"
+            self.store_path = store_path
 
         if aruco_map:
             self.aruco_map = aruco_map
@@ -114,7 +112,7 @@ class AnalysePose(Pipeline):
                 y_object = results_pose.pose_world_landmarks.landmark[getattr(mp.solutions.pose.PoseLandmark, y_key)]
                 x = [x_object.x, x_object.y, x_object.z]
                 y = [y_object.x, y_object.y, y_object.z]
-                columns_list.append(name)
+                columns_list.append(f"dist_{name}")
                 values_list.append(math.dist(x, y))
 
         return columns_list, values_list
@@ -128,9 +126,11 @@ class AnalysePose(Pipeline):
 
         return np.degrees(angle)
 
-    def calculate_distance(self):
-        pass
     def close(self):
-        # not yet, when we have the colums more stable
-        # self.df.to_arrow(f"{self.date_time_base_path}.arrow")
-        self.df.to_csv(f"{self.date_time_base_path}.csv")
+        dirname = os.path.dirname(os.path.abspath(self.store_path))
+        os.makedirs(dirname, exist_ok=True)
+        # TODO: set an assert on csv extension, and/or also arrow extension from given store_path
+        # self.df.to_arrow((self.store_path)
+        # so, csv for now
+        self.df.to_csv(self.store_path)
+

@@ -1,7 +1,7 @@
 from sys import platform
 import os
 from pathlib import Path
-
+import datetime
 
 def get_documents_path():
     home_path = Path(os.path.expanduser('~'))
@@ -13,3 +13,20 @@ def get_documents_path():
         pass
 
     return home_path
+
+
+def get_recording_path():
+    documents_path = get_documents_path()
+    recordings_path = documents_path.joinpath('tupuedes', 'recordings')
+
+    return recordings_path
+
+
+def get_new_recording_path():
+    base_path = get_recording_path()
+    now = datetime.datetime.now()
+    date_string = now.strftime('%Y.%m.%d %H.%M')
+
+    return base_path.joinpath(date_string)
+
+
