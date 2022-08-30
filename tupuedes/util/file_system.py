@@ -10,7 +10,7 @@ def get_documents_path():
     elif platform == "darwin":
         return home_path.joinpath('Documents')
     elif platform == "win32":
-        pass
+        return home_path.joinpath('Documents')
 
     return home_path
 
