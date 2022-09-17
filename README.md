@@ -30,6 +30,7 @@ where you source is 0 for default web cam (other ints for other webcams), or a n
 ## Philosophy
 _Tú puedes_ could be **eventually** run on mobile devices, eventually. But before product-market fit, we rather to iterate fast; that why:
  - We manage video trough openCV from python
+ - we would like to our python be really pythonic (run ```import this`` at ipython/notebook cell)
  - We provide a full pandas dataframe with structured data to exercise classes
 
 _Tú puedes_ would like to be open source and commercial, like:
@@ -38,22 +39,28 @@ _Tú puedes_ would like to be open source and commercial, like:
 
 _Tú puedes_ would like to be a feminist artifact:
  - _how this is empowering women?_ is **always** a good question
- - propietary software is kind patriarchal
- - we 
+ - proprietary software is kind of patriarchal
+ - best competition is against you self
+ - 
 
 ## dev goals
 ### To públic access
  - 1 naive working exercise
- - home dir writting (mac/windows/linux)
+ - ~~home dir writting (mac/windows/linux)~~
  - nice readme
-   - videos
-   - conda set up
-   - windows / mac / linux
+   - demo gif
+   - ~~conda set up~~
+   - ~~windows / mac / linux~~
    - vision / press realease
      - import this
      - feminist
  - discord channel?
- - setting metrics
+ - ~~setting metrics~~
  - pass the source trough **kargs to super().__init__() in the fancy way at all pipeline child classes
+
+### good practice stuff
+ - train a pose detector (time series labeller) with sktime pipeline including exponential smoothing and detrend
+ - 
 ### Maybe late
  - config manager
+ - run it on [PinePhone](https://wiki.postmarketos.org/wiki/Devices)[2](https://forum.manjaro.org/t/access-pinephone-camera-with-opencv-2/119594)

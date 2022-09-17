@@ -10,8 +10,10 @@ import math, os
 # TODO: split the store logic to another object. Maybe?
 
 class AnalysePose(Pipeline):
-    def __init__(self, exercises, store = False, store_path=None, aruco_map = None):
+    def __init__(self, exercises, store = False, store_path=None, aruco_map = None, datetime=True, frame_id = False):
         self.exercises = exercises
+        self.datetime = datetime
+        self.frame_id = frame_id
 
         if store:
             assert store_path is not None, "If you set store = True, please set a path where to save"
@@ -34,9 +36,12 @@ class AnalysePose(Pipeline):
 
         columns_list = []
         values_list = []
-        # Datetime
-        columns_list.append('datetime')
-        values_list.append(datetime.datetime.now())
+        if self.datetime:
+            columns_list.append('datetime')
+            values_list.append(datetime.datetime.now())
+        if self.frame_id:
+            columns_list.append('frame_id')
+            values_list.append(data['frame_num'])
 
         if 'fps' in data:
             columns_list.append('fps')
@@ -132,5 +137,5 @@ class AnalysePose(Pipeline):
         # TODO: set an assert on csv extension, and/or also arrow extension from given store_path
         # self.df.to_arrow((self.store_path)
         # so, csv for now
-        self.df.to_csv(self.store_path)
+        self.df.to_csv(self.store_path, index=False)
 

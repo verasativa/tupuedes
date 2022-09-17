@@ -30,5 +30,12 @@ def golive(source, record, plot):
 @cli.command()
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
 def train(source):
-    from tupuedes.main import loop
-    loop(source)
+    from tupuedes.main import train_loop
+    train_loop(source)
+
+@cli.command()
+@click.option('--source', default=0, help='stream source', type=open_cap_validator)
+@click.option('--destination', default=0, help='csv destination', type=open_cap_validator)
+def video2csv(source, destination):
+    from tupuedes.main import video_to_csv
+    video_to_csv(source, destination, get_frames=True)

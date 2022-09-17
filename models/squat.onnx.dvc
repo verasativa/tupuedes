@@ -1,0 +1,4 @@
+outs:
+- md5: 5e85e2da3c7c15c78f6b8930b329e696
+  size: 117913
+  path: squat.onnx

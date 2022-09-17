@@ -8,7 +8,6 @@ class ArucoFinder(Pipeline):
         self.arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
         self.arucoParams = cv2.aruco.DetectorParameters_create()
         self.aruco_map = aruco_map
-        print(self.source)
 
     def map(self, data):
         data = self.find_aruco(data)
