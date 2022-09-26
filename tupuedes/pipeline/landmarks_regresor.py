@@ -1,17 +1,21 @@
 from inspect import Attribute
 from tupuedes.pipeline import Pipeline
+from tupuedes.analysis import FullBodyPoseEmbedder
 #from mediapipe.solutions import pose
 #from .libs.pose_tracker import PoseTracker
 import mediapipe as mp
+import numpy as np
 
 
-class PoseRegresor(Pipeline):
+
+class LandmarksRegresor(Pipeline):
 
     def __init__(self, min_detection_confidence=0.5, min_tracking_confidence=0.5):
-        self.tracker = mp.solutions.pose.Pose(
+        self.model = mp.solutions.pose.Pose(
             min_detection_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence
             )
+        self.embedder = FullBodyPoseEmbedder()
         # self.tracker = PoseTracker(link_len=link_len, num=num, mag=mag, match=match,
         #                            orb_features=orb_features)
 
@@ -23,28 +27,22 @@ class PoseRegresor(Pipeline):
         return data
 
     def pose_infer(self, data):
-        #results_pose = pose.process(image)
-        # if "predictions" not in data:
-        #     return
-
-        # predictions = data["predictions"]
-        # if "instances" not in predictions:
-        #     return
-
-        # instances = predictions["instances"]
-        # if not instances.has("pred_keypoints"):
-        #     return
-
         image = data["image"]
-        # keypoints = instances.pred_keypoints.cpu().numpy()
-        # scores = instances.scores
-        # num_instances = len(keypoints)
-        # assert len(scores) == num_instances
-
-        # data["pose_flows"] = self.tracker.track(image, keypoints, scores)
-        data['results_mp_pose'] = self.tracker.process(image)
+        results_mp_pose = self.model.process(image)
+        # legacy support for pose annotator and csv dump
+        data['results_mp_pose'] = results_mp_pose
+        if results_mp_pose.pose_landmarks is not None:
+            data['embedding'] = self.calc_embeddings(results_mp_pose)
 
         return data
+
+    def calc_embeddings(self, results_mp_pose):
+        landmarks = [[landmark.x, landmark.y, landmark.z] for landmark in results_mp_pose.pose_landmarks.landmark]
+        landmarks = np.array(landmarks)
+        embedding = self.embedder(landmarks)
+
+        return embedding
+
 
     @classmethod
     @property

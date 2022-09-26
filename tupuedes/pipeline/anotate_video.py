@@ -39,6 +39,12 @@ class AnnotateVideo(Pipeline):
         if self.annotate_fps:
             self.fps_annotator(data)
 
+        self.mode_title_annotator(data)
+        self.mode_counters_annotator(data)
+
+        if 'debug_line' in data['mode'].keys():
+            self.debug_line_annotator(data)
+
         return data
 
     def fps_annotator(self, data):
@@ -76,3 +82,30 @@ class AnnotateVideo(Pipeline):
                 cv2.putText(dst_image, str(key),
                             (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
                             0.5, (0, 255, 0), 2)
+
+    def mode_title_annotator(self, data):
+        dst_image = data[self.dst]
+        pos = (int((dst_image.shape[1] / 2) - 30), 50)
+        cv2.putText(dst_image, data['mode']['display_name'], pos,
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=2,
+                    color=(170, 0, 255))
+
+    def mode_counters_annotator(self, data):
+        dst_image = data[self.dst]
+        # TODO: refactor to make it multy counter compatible (when refactored to pygame)
+        counter, value = next(iter(data['mode']['counters'].items()))
+        text = f"{counter}: {value}"
+        pos = (10, 50)
+        cv2.putText(dst_image, text, pos,
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=2,
+                    color=(85, 255, 51))
+
+    def debug_line_annotator(self, data):
+        dst_image = data[self.dst]
+        pos = (10, dst_image.shape[0] - 50)
+        cv2.putText(dst_image, data['mode']['debug_line'], pos,
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=2,
+                    color=(0, 170, 255))

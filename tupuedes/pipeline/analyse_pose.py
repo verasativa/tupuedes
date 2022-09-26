@@ -1,13 +1,13 @@
 from locale import format_string
 from tupuedes.pipeline import Pipeline
-from tupuedes.pipeline.pose_regresor import PoseRegresor
+from tupuedes.pipeline.landmarks_regresor import LandmarksRegresor
 import datetime, pathlib
 import pandas as pd
 import numpy as np
 import mediapipe as mp
 import math, os
 
-# TODO: split the store logic to another object. Maybe?
+# TODO: make it only about csv storage
 
 class AnalysePose(Pipeline):
     def __init__(self, exercises, store = False, store_path=None, aruco_map = None, datetime=True, frame_id = False):
@@ -79,7 +79,7 @@ class AnalysePose(Pipeline):
     def add_mp_pose(self, results_pose, columns_list, values_list):
         if results_pose.pose_landmarks is not None:
             # Colums for absolute, relative, x, y, z, v, p
-            for column in PoseRegresor.FIELDS:
+            for column in LandmarksRegresor.FIELDS:
                 columns_list.append(column)
             _desc, absolute_landmarks = results_pose.pose_landmarks.ListFields()[0]
             for absolute_landmark in absolute_landmarks:

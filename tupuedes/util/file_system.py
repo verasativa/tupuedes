@@ -1,3 +1,5 @@
+import tupuedes
+
 from sys import platform
 import os
 from pathlib import Path
@@ -30,3 +32,8 @@ def get_new_recording_path():
     return base_path.joinpath(date_string)
 
 
+def get_module_data_path(internal_path):
+    pip_path = os.path.dirname(tupuedes.__file__)
+    pip_path = Path(pip_path).parents[0]
+
+    return pip_path.joinpath(*internal_path)

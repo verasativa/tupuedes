@@ -1,8 +1,6 @@
 import click
 
 
-
-
 @click.group()
 @click.option('--debug/--no-debug', default=False)
 #@click.pass_context
@@ -11,13 +9,15 @@ def cli(debug):
     if debug:
         click.echo(f"Debug mode is on")
 
+
 def open_cap_validator(source):
     try:
         return int(source)
     except:
         return source
 
-@cli.command()  # @cli, not @click!
+
+@cli.command()  # @cl# i, not @click!
 #@click.pass_context
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
 @click.option('--record/--no-record', default=False)
@@ -27,11 +27,14 @@ def golive(source, record, plot):
     click.echo('Going live...')
     live.record(source, plot, record)
 
+
 @cli.command()
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
-def train(source):
+@click.option('--mode', default='squat')
+def train(source, mode):
     from tupuedes.main import train_loop
-    train_loop(source)
+    train_loop(source, mode)
+
 
 @cli.command()
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
@@ -39,3 +42,5 @@ def train(source):
 def video2csv(source, destination):
     from tupuedes.main import video_to_csv
     video_to_csv(source, destination, get_frames=True)
+
+

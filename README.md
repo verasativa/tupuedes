@@ -51,16 +51,26 @@ _Tú puedes_ would like to be a feminist artifact:
    - demo gif
    - ~~conda set up~~
    - ~~windows / mac / linux~~
-   - vision / press realease
+   - vision / press release
      - import this
      - feminist
  - discord channel?
  - ~~setting metrics~~
  - pass the source trough **kargs to super().__init__() in the fancy way at all pipeline child classes
 
-### good practice stuff
+### good practice stuff (coming soon)
  - train a pose detector (time series labeller) with sktime pipeline including exponential smoothing and detrend
- - 
+ - set a standard interfaces for body positions and/or body pode embedding
+ - set exercises model training as dvc experiments [ref](https://github.com/iterative/example-dvc-experiments/blob/main/src/train.py)
+ - refactor window to pygame
+   - set rectangles and minimal viable displays for:
+     - repetitions
+     - mode
+     - badges
+     - telemetry (bpm and other sensors)
+     - debug/plot
+   - home menu 
 ### Maybe late
  - config manager
  - run it on [PinePhone](https://wiki.postmarketos.org/wiki/Devices)[2](https://forum.manjaro.org/t/access-pinephone-camera-with-opencv-2/119594)
+ - explore compiling to webassembly
