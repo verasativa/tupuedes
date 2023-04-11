@@ -1,0 +1,4 @@
+outs:
+- md5: d7cd69988901f11942fe47ebe7814a23
+  size: 22796807
+  path: efficientdet_lite2_fp32.tflite
