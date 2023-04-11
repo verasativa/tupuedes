@@ -17,15 +17,22 @@ def open_cap_validator(source):
         return source
 
 
-@cli.command()  # @cl# i, not @click!
-#@click.pass_context
+# @cli.command()  # @cl# i, not @click!
+# #@click.pass_context
+# @click.option('--source', default=0, help='stream source', type=open_cap_validator)
+# @click.option('--record/--no-record', default=False)
+# @click.option('--plot/--no-plot', default=False)
+# def golive(source, record, plot):
+#     from tupuedes import live
+#     click.echo('Going live...')
+#     live.record(source, plot, record)
+
+@cli.command()
 @click.option('--source', default=0, help='stream source', type=open_cap_validator)
-@click.option('--record/--no-record', default=False)
-@click.option('--plot/--no-plot', default=False)
-def golive(source, record, plot):
-    from tupuedes import live
-    click.echo('Going live...')
-    live.record(source, plot, record)
+def demo(source):
+    from tupuedes.main import demo_loop
+
+    demo_loop(source)
 
 
 @cli.command()

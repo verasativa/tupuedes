@@ -6,7 +6,7 @@ from tupuedes.pipeline import Pipeline
 class DisplayVideo(Pipeline):
     """Pipeline task to display images as a video."""
 
-    def __init__(self, src, window_name=None, org=None):
+    def __init__(self, src, window_name=None, org=None, full_screen=False):
         self.src = src
         self.window_name = window_name if window_name else src
 
@@ -16,6 +16,9 @@ class DisplayVideo(Pipeline):
             # Set the window position
             x, y = org
             cv2.moveWindow(self.window_name, x, y)
+        if full_screen:
+            cv2.namedWindow(self.window_name, cv2.WND_PROP_FULLSCREEN)
+            cv2.setWindowProperty(self.window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         super().__init__()
 

@@ -39,11 +39,11 @@ class AnnotateVideo(Pipeline):
         if self.annotate_fps:
             self.fps_annotator(data)
 
-        self.mode_title_annotator(data)
-        self.mode_counters_annotator(data)
+        #self.mode_title_annotator(data)
+        #self.mode_counters_annotator(data)
 
-        if 'debug_line' in data['mode'].keys():
-            self.debug_line_annotator(data)
+        # if 'debug_line' in data['mode'].keys():
+        #     self.debug_line_annotator(data)
 
         return data
 
